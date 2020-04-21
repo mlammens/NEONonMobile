@@ -32,17 +32,31 @@ By completing this activity, you should be able to:
 
 # Preliminaries
 
+## Starting your RStudio session
+
 In order to carry out the analyses in this activity, you will first need to initate a new R session. 
 If you are on a desktop computer with RStudio installed, start a new RStudio session. 
 (**NOTE: In this activity, I am not being careful in distiguishing R and RStudio. Strictly speaking, this is poor practice. R is the computer programming language and RStudio is an Integrated Development Environment that makes using R easier. You need to have both programs installed on your desktop.**)
 If you do not have RStudio installed, or you are working on a mobile device, you can sign-up for a free RStudio Cloud account, where you can run an RStudio session through a browser. 
 Go to [https://rstudio.cloud/](https://rstudio.cloud/) to begin this process.
 
+## Getting our Rmd file 
 
-get the Rmd file that contains
+Next, let's get the Rmd file that will allow us to run all of the code for this activity.
+This Rmd file is also the file that translates into this webpage! (Yes, that's meta.)
+We will use the `download.file` function to get this Rmd file.
+You will need to copy and paste this line in your RStudio session.
 
-install then load a few packages into your R environment. 
-If you are working on a mobile device
+```{r, eval=FALSE}
+download.file("https://github.com/mlammens/NEONonMobile/raw/master/working-with-neon.Rmd",
+              destfile = "./temp.Rmd")
+```
+
+
+
+## Install and load a few packages into your R environment
+
+If you are working on a mobile device ...
 
 
 ```{r, eval=FALSE}
@@ -198,23 +212,13 @@ ggplot(data = all_plants_summary) +
 ```
 
 
+```{r}
+t.test(all_plants_summary$Richness ~ all_plants_summary$siteID)
+```
+
+
 
 ```{r}
 length(unique(all_plants$plotID))
 length(unique(all_plants$mainsubplotID))
 ```
-
-
-
-
-
-```{r}
-plant_data %>%
-  filter(scientificName == "Frangula alnus Mill.")
-
-
-plant_data %>%
-  group_by(plotID) %>%
-  summarise(richness = length(unique(scientificName)))
-```
-
