@@ -4,12 +4,53 @@ author: "Matthew Aiello-Lammens"
 output: html_document
 ---
 
+# Overview
+
+In this activity, you will be introduced to some basic data processing and exploration steps using data from the National Ecological Observatory Network (NEON). 
+You can learn more about NEON at this website - [https://www.neonscience.org/](https://www.neonscience.org/).
+This activity is designed so that you can complete it using a mobile device, such as your phone, in conjunction with RStudio Cloud, [https://rstudio.cloud/](https://rstudio.cloud/).
+Throughout the first part of the activity, we will work with the NEON **Plant Presence and Percent Cover** data set. 
+More details on these data can be found here - [https://data.neonscience.org/data-products/DP1.10058.001](https://data.neonscience.org/data-products/DP1.10058.001).
+
+# Learning Objectives
+
+By completing this activity, you should be able to:
+
+## Quantitative / Data Skills
+
+* explain the importance of data management in the scientific process
+* modify a data set using a `data.frame` object in R
+* modify `dplyr` code to summerise a data set
+* calculate plot-level species richness values
+
+## Concept learning objectives
+
+* interpret data visualizations, such as histograms
+* develop hypotheses related to differences in plant species richness among NEON sites
+
+
+
+# Preliminaries
+
+In order to carry out the analyses in this activity, you will first need to initate a new R session. 
+If you are on a desktop computer with RStudio installed, start a new RStudio session. 
+(**NOTE: In this activity, I am not being careful in distiguishing R and RStudio. Strictly speaking, this is poor practice. R is the computer programming language and RStudio is an Integrated Development Environment that makes using R easier. You need to have both programs installed on your desktop.**)
+If you do not have RStudio installed, or you are working on a mobile device, you can sign-up for a free RStudio Cloud account, where you can run an RStudio session through a browser. 
+Go to [https://rstudio.cloud/](https://rstudio.cloud/) to begin this process.
+
+
+get the Rmd file that contains
+
+install then load a few packages into your R environment. 
+If you are working on a mobile device
+
+
 ```{r, eval=FALSE}
-install.packages("devtools")
 install.packages("dplyr")
+install.packages("ggplot2")
 install.packages("neonUtilities")
-devtools::install_github("NEONScience/NEON-geolocation/geoNEON")
 ```
+
 
 Load packages
 
@@ -17,9 +58,6 @@ Load packages
 library(neonUtilities)
 library(dplyr)
 library(ggplot2)
-#library(geoNEON)
-#library(raster)
-#library(rhdf5)
 
 # Set global option to NOT convert all character variables to factors
 options(stringsAsFactors=F)
