@@ -1,0 +1,224 @@
+---
+title: "Working with NEON data on mobile devices"
+author: "Matthew Aiello-Lammens"
+output: html_document
+---
+
+# Overview
+
+In this activity, you will be introduced to some basic data processing and exploration steps using data from the National Ecological Observatory Network (NEON). 
+You can learn more about NEON at this website - [https://www.neonscience.org/](https://www.neonscience.org/).
+This activity is designed so that you can complete it using a mobile device, such as your phone, in conjunction with RStudio Cloud, [https://rstudio.cloud/](https://rstudio.cloud/).
+Throughout the first part of the activity, we will work with the NEON **Plant Presence and Percent Cover** data set. 
+More details on these data can be found here - [https://data.neonscience.org/data-products/DP1.10058.001](https://data.neonscience.org/data-products/DP1.10058.001).
+
+# Learning Objectives
+
+By completing this activity, you should be able to:
+
+## Quantitative / Data Skills
+
+* explain the importance of data management in the scientific process
+* modify a data set using a `data.frame` object in R
+* modify `dplyr` code to summerise a data set
+* calculate plot-level species richness values
+
+## Concept learning objectives
+
+* interpret data visualizations, such as histograms
+* develop hypotheses related to differences in plant species richness among NEON sites
+
+
+
+# Preliminaries
+
+## Starting your RStudio session
+
+In order to carry out the analyses in this activity, you will first need to initate a new R session. 
+If you are on a desktop computer with RStudio installed, start a new RStudio session. 
+(**NOTE: In this activity, I am not being careful in distiguishing R and RStudio. Strictly speaking, this is poor practice. R is the computer programming language and RStudio is an Integrated Development Environment that makes using R easier. You need to have both programs installed on your desktop.**)
+If you do not have RStudio installed, or you are working on a mobile device, you can sign-up for a free RStudio Cloud account, where you can run an RStudio session through a browser. 
+Go to [https://rstudio.cloud/](https://rstudio.cloud/) to begin this process.
+
+## Getting our Rmd file 
+
+Next, let's get the Rmd file that will allow us to run all of the code for this activity.
+This Rmd file is also the file that translates into this webpage! (Yes, that's meta.)
+We will use the `download.file` function to get this Rmd file.
+You will need to copy and paste this line in your RStudio session.
+
+```{r, eval=FALSE}
+download.file("https://github.com/mlammens/NEONonMobile/raw/master/working-with-neon.Rmd",
+              destfile = "./temp.Rmd")
+```
+
+
+
+## Install and load a few packages into your R environment
+
+If you are working on a mobile device ...
+
+
+```{r, eval=FALSE}
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("neonUtilities")
+```
+
+
+Load packages
+
+```{r}
+library(neonUtilities)
+library(dplyr)
+library(ggplot2)
+
+# Set global option to NOT convert all character variables to factors
+options(stringsAsFactors=F)
+```
+
+
+# Working with plant presence and percent cover data
+
+We will begin by working with NEONs **plant presence and percent cover** data set. 
+More details on these data can be found here - [https://data.neonscience.org/data-products/DP1.10058.001](https://data.neonscience.org/data-products/DP1.10058.001).
+
+## Getting data using `loadByProduct`
+
+First, we will use the `loadByProduct` function in `neonUtilities`.
+
+**NOTE:** Here we are using the `check.size = FALSE` argument. 
+We are doing this to prevent the function from sending a query to the console, and because we know these data are relatively small in size (approx. 2.5 MB). 
+However, if working with *potentially* larger data sets, then you should set `check.size = TRUE`.
+
+```{r}
+plants <- loadByProduct(dpID = "DP1.10058.001", site = c("HARV", "BART"), check.size = FALSE)
+```
+
+## Alternative approach - working with zipped files after manual download from data portal
+
+Stack data
+
+```{r, eval = FALSE}
+stackByTable("NEON_presence-cover-plant.zip")
+```
+
+Read data
+
+```{r, eval = FALSE}
+plant_data_1m <- read.csv("NEON_presence-cover-plant/stackedFiles/div_1m2Data.csv")
+```
+
+
+## Exploring the data
+
+Let's examine the data we just recieved. They should be stored as a `list` object. 
+You can find out more information about lists here - [https://stat.ethz.ch/R-manual/R-devel/library/base/html/list.html](https://stat.ethz.ch/R-manual/R-devel/library/base/html/list.html).
+
+For our immediate perposes, what we need to know is that we can access any element of a `list` with the `$` operator. But first, let's get the names of these different objects.
+
+```{r}
+names(plants)
+```
+
+The `readme_10058` element looks promising.
+
+```{r}
+plants$readme_10058
+```
+
+OK. If we navigated that readme just a bit, we would have learned that there are at least two data sets with the actual vegetation survey data: `div_1m2Data` and `div_10m2Data_100m2Data`. 
+
+Let's have a peek at each.
+
+```{r}
+head(plants$div_1m2Data)
+```
+
+
+```{r}
+head(plants$div_10m2Data100m2Data)
+```
+
+How many rows are in each?
+
+1m2 plots
+
+```{r}
+nrow(plants$div_1m2Data)
+```
+
+10m2 / 100m2 plots
+
+```{r}
+nrow(plants$div_10m2Data100m2Data)
+```
+
+Those are tens of thousands of rows!
+
+Let's have a look at how many unique species occur in each data set.
+
+1m2 plots
+
+```{r}
+length(unique(plants$div_1m2Data$scientificName))
+```
+
+10m2 / 100m2 plots
+
+```{r}
+length(unique(plants$div_10m2Data100m2Data$scientificName))
+```
+
+## Calculating data summaries
+
+We are going to do some quick and dirty data summaries.
+
+First, let's calculate species richness values for plots.
+Here, we are going to work at the **plot** level, including all of the data from the subplots.
+To do this, we first need to make a new column that describes just the plot number.
+
+
+Combine data sets
+
+```{r}
+all_plants <- rbind(
+  select(plants$div_10m2Data100m2Data, siteID, plotID, subplotID, endDate, scientificName, family, nativeStatusCode), 
+  select(plants$div_1m2Data, siteID, plotID, subplotID, endDate, scientificName, family, nativeStatusCode))
+
+all_plants <- filter(all_plants, !is.na(scientificName))
+```
+
+
+
+```{r}
+all_plants$mainsubplotID <- as.numeric(gsub(pattern = "\\..*", replacement = "", all_plants$subplotID))
+```
+
+
+
+```{r}
+all_plants_summary <-
+  all_plants %>%
+  group_by(siteID, plotID) %>%
+  summarise(Richness = length(unique(scientificName)))
+all_plants_summary
+```
+
+
+```{r}
+ggplot(data = all_plants_summary) +
+  geom_histogram(aes(x = Richness, fill = siteID), position = "dodge")
+```
+
+
+```{r}
+t.test(all_plants_summary$Richness ~ all_plants_summary$siteID)
+```
+
+
+
+```{r}
+length(unique(all_plants$plotID))
+length(unique(all_plants$mainsubplotID))
+```
