@@ -1,6 +1,6 @@
 ## NEON-on-Mobile
 
-This is the project website for the NEON-on-Mobile project.
+This is the repository for the project website for the NEON-on-Mobile project - [https://mlammens.github.io/NEONonMobile](https://mlammens.github.io/NEONonMobile). 
 
 ---
 
